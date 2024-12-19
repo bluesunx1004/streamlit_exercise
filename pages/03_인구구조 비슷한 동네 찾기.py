@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import koreanize-matplotlib
+import koreanize_matplotlib
 from sklearn.metrics.pairwise import cosine_similarity
 
 # 데이터 로드
