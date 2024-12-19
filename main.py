@@ -1,48 +1,41 @@
 import streamlit as st
-from pdf2image import convert_from_bytes
-from pptx import Presentation
-from pptx.util import Inches
-import io
-import tempfile
+import pandas as pd
 
-st.title("📄 PDF를 PPTX로 변환하기 🖼️")
+st.title("🧠 MBTI 성격유형별 직업 및 인간관계 분석기 🔍")
 
-uploaded_file = st.file_uploader("PDF 파일을 선택하세요", type="pdf")
+mbti_types = ["ISTJ", "ISFJ", "INFJ", "INTJ", "ISTP", "ISFP", "INFP", "INTP", 
+              "ESTP", "ESFP", "ENFP", "ENTP", "ESTJ", "ESFJ", "ENFJ", "ENTJ"]
 
-if uploaded_file is not None:
-    st.success("PDF 파일이 성공적으로 업로드되었습니다!")
+selected_mbti = st.selectbox("당신의 MBTI 유형을 선택하세요:", mbti_types)
 
-    # PDF를 이미지로 변환
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
-        tmp_file.write(uploaded_file.getvalue())
-        tmp_file_path = tmp_file.name
+mbti_data = {
+    "ISTJ": {
+        "직업": ["회계사 💼", "경찰관 👮", "군인 🪖", "판사 ⚖️", "프로젝트 매니저 📊"],
+        "잘 맞는 유형": ["ESTJ", "ISTJ", "ENTJ", "ISFJ"],
+        "설명": "ISTJ는 체계적이고 책임감 있는 성격으로, 규칙과 전통을 중요시합니다. 이들은 정확성과 신뢰성을 요구하는 직업에서 뛰어난 능력을 발휘합니다. 🏛️"
+    },
+    "ENFP": {
+        "직업": ["작가 ✍️", "배우 🎭", "상담사 🤗", "마케터 📣", "기업가 💡"],
+        "잘 맞는 유형": ["INTJ", "INFJ", "ENTJ", "ENFJ"],
+        "설명": "ENFP는 열정적이고 창의적인 성격으로, 새로운 아이디어를 만들어내는 데 탁월합니다. 이들은 자유롭고 유연한 환경에서 최고의 성과를 냅니다. 🌈"
+    },
+    # 나머지 MBTI 유형들에 대한 데이터도 이와 같은 형식으로 추가
+}
 
-    images = convert_from_bytes(uploaded_file.getvalue())
+if selected_mbti in mbti_data:
+    st.header(f"🌟 {selected_mbti} 유형의 특징")
+    
+    st.subheader("🚀 추천 직업")
+    for job in mbti_data[selected_mbti]["직업"]:
+        st.write(f"- {job}")
+    
+    st.subheader("❤️ 잘 맞는 MBTI 유형")
+    for compatible in mbti_data[selected_mbti]["잘 맞는 유형"]:
+        st.write(f"- {compatible}")
+    
+    st.subheader("💡 성격 설명")
+    st.write(mbti_data[selected_mbti]["설명"])
+else:
+    st.error("선택한 MBTI 유형에 대한 정보가 없습니다.")
 
-    # PPTX 생성
-    prs = Presentation()
-    for image in images:
-        slide = prs.slides.add_slide(prs.slide_layouts[6])  # 빈 슬라이드
-        
-        # PDF 페이지 크기에 맞춰 슬라이드 크기 조정
-        prs.slide_width = Inches(image.width / 96)
-        prs.slide_height = Inches(image.height / 96)
-        
-        # 이미지를 슬라이드에 추가
-        left = top = Inches(0)
-        pic = slide.shapes.add_picture(io.BytesIO(image.tobytes()), left, top, width=prs.slide_width, height=prs.slide_height)
-
-    # PPTX 파일 저장
-    pptx_file = io.BytesIO()
-    prs.save(pptx_file)
-    pptx_file.seek(0)
-
-    # 다운로드 버튼 생성
-    st.download_button(
-        label="PPTX 다운로드",
-        data=pptx_file,
-        file_name="converted_presentation.pptx",
-        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    )
-
-st.info("PDF 파일을 업로드하면 PPTX로 변환됩니다. 변환된 파일은 다운로드 버튼을 통해 받을 수 있습니다.")
+st.balloons()
