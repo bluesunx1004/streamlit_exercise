@@ -13,10 +13,6 @@ if uploaded_file is not None:
     st.success("PDF 파일이 성공적으로 업로드되었습니다!")
 
     # PDF를 이미지로 변환
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
-        tmp_file.write(uploaded_file.getvalue())
-        tmp_file_path = tmp_file.name
-
     images = convert_from_bytes(uploaded_file.getvalue())
 
     # PPTX 생성
@@ -30,7 +26,10 @@ if uploaded_file is not None:
         
         # 이미지를 슬라이드에 추가
         left = top = Inches(0)
-        pic = slide.shapes.add_picture(io.BytesIO(image.tobytes()), left, top, width=prs.slide_width, height=prs.slide_height)
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp_file:
+            image.save(tmp_file, format='PNG')
+            tmp_file_path = tmp_file.name
+        pic = slide.shapes.add_picture(tmp_file_path, left, top, width=prs.slide_width, height=prs.slide_height)
 
     # PPTX 파일 저장
     pptx_file = io.BytesIO()
