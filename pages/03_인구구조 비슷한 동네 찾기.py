@@ -3,49 +3,40 @@ import pandas as pd
 import numpy as np
 import koreanize_matplotlib
 from sklearn.metrics.pairwise import cosine_similarity
+import matplotlib.pyplot as plt
 
-# 데이터 로드
+# 데이터 로드 및 정리
 @st.cache_data
 def load_data():
     data = pd.read_csv('age2411.csv')
+    data['행정구역'] = data['행정구역'].apply(lambda x: re.sub(r'\(.*\)', '', x).strip())
     return data
 
 data = load_data()
 
-# 제목
-st.title('인구 구조가 비슷한 동네 찾기')
-
-# 지역 선택
+# 사용자 입력
+st.title("우리 동네와 비슷한 인구 구조 찾기")
 selected_region = st.selectbox('당신의 동네를 선택하세요', data['행정구역'].unique())
 
-# 선택된 지역의 데이터
-selected_data = data[data['행정구역'] == selected_region].iloc[0, 3:103].values.reshape(1, -1)
+# 선택한 지역의 인구 구조 추출
+selected_region_structure = data[data['행정구역'] == selected_region].iloc[0, 3:103].values
 
-# 모든 지역의 데이터
-all_regions_data = data.iloc[:, 3:103].values
-
-# 코사인 유사도 계산
-similarities = cosine_similarity(selected_data, all_regions_data)
-
-# 유사도가 가장 높은 5개 지역 찾기
-top_5_indices = similarities[0].argsort()[-6:][::-1][1:]
-top_5_regions = data.iloc[top_5_indices]['행정구역'].tolist()
-top_5_similarities = similarities[0][top_5_indices]
+# 모든 지역의 데이터 추출 및 유사도 계산
+all_regions_structure = data.iloc[:, 3:103].values
+similarities = cosine_similarity([selected_region_structure], all_regions_structure)
+most_similar_index = similarities[0].argsort()[-2]  # 자기 자신 제외
+most_similar_region = data.iloc[most_similar_index]['행정구역']
+most_similar_region_structure = data.iloc[most_similar_index, 3:103].values
 
 # 결과 출력
-st.write(f"'{selected_region}'과(와) 가장 인구 구조가 비슷한 5개 동네:")
-for region, similarity in zip(top_5_regions, top_5_similarities):
-    st.write(f"{region}: 유사도 {similarity:.4f}")
+st.write(f"'{selected_region}'과(와) 가장 비슷한 인구 구조를 가진 동네는 '{most_similar_region}'입니다.")
 
-# 선택된 지역과 가장 유사한 지역의 인구 구조 비교
-st.subheader('인구 구조 비교')
-selected_age_data = data[data['행정구역'] == selected_region].iloc[0, 3:103]
-most_similar_region = top_5_regions[0]
-most_similar_age_data = data[data['행정구역'] == most_similar_region].iloc[0, 3:103]
-
-comparison_df = pd.DataFrame({
-    '선택한 지역': selected_age_data,
-    '가장 유사한 지역': most_similar_age_data
-}, index=[f'{i}세' for i in range(100)])
-
-st.line_chart(comparison_df)
+# 그래프 출력
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.plot(range(100), selected_region_structure, label=selected_region)
+ax.plot(range(100), most_similar_region_structure, label=most_similar_region)
+ax.set_xlabel('연령')
+ax.set_ylabel('인구 수')
+ax.set_title(f'{selected_region}과(와) {most_similar_region}의 인구 구조 비교')
+ax.legend()
+st.pyplot(fig)
