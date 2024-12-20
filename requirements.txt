@@ -5,3 +5,4 @@ pillow
 poppler-utils
 koreanize-matplotlib
 scikit-learn
+seaborn
