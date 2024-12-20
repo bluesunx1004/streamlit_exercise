@@ -1,15 +1,15 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import koreanize_matplotlib
 from sklearn.metrics.pairwise import cosine_similarity
 import matplotlib.pyplot as plt
+import re
 
-# 데이터 로드 및 정리
+# 데이터 로드 함수
 @st.cache_data
 def load_data():
     data = pd.read_csv('age2411.csv')
-    data['행정구역'] = data['행정구역'].apply(lambda x: re.sub(r'\(.*\)', '', x).strip())
+    # '행정구역' 열에서 괄호와 그 안의 내용을 제거
+    data['행정구역'] = data['행정구역'].apply(lambda x: re.sub(r'\(.*\)', '', str(x)).strip())
     return data
 
 data = load_data()
@@ -18,7 +18,7 @@ data = load_data()
 st.title("우리 동네와 비슷한 인구 구조 찾기")
 selected_region = st.selectbox('당신의 동네를 선택하세요', data['행정구역'].unique())
 
-# 선택한 지역의 인구 구조 추출
+# 선택된 지역의 인구 구조 추출
 selected_region_structure = data[data['행정구역'] == selected_region].iloc[0, 3:103].values
 
 # 모든 지역의 데이터 추출 및 유사도 계산
