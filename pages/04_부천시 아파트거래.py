@@ -7,7 +7,7 @@ import koreanize_matplotlib
 # 데이터 로드
 @st.cache_data
 def load_data():
-    data = pd.read_csv('buceonsiapateugeoraecsv.csv', encoding='cp949')
+    data = pd.read_csv('bucheon2022apt.csv', encoding='cp949')
     return data
 
 data = load_data()
