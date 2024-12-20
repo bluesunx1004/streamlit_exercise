@@ -12,7 +12,7 @@ def load_data():
 
 data = load_data()
 
-st.title('부천시 아파트 거래 분석')
+st.title('부천시 아파트 거래 분석(2022년 기준), 데이터 출처: 캐글')
 
 # 1. 가장 거래가 많은 동
 st.header('1. 가장 거래가 많은 동')
